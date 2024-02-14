@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 const utli = require('util')
 const asyncverify = utli.promisify(jwt.verify)
 const ApiError = require('../errors/apierror')
-const User=require('../models/userSchema')
+const User=require('../models/userModel')
 
 
 const authorized= async (req, res, next) => {
@@ -20,8 +20,10 @@ const authorized= async (req, res, next) => {
   }
 
   // 2) Verify token not expire token
-  const decoded = jwt.verify(token, process.env.secretkey);
   
+  const decoded = jwt.verify(token, process.env.secretkey);
+  console.log(decoded);
+ 
 // 3) Check if user exists
   const currentUser = await User.findById(decoded.id);
   console.log(currentUser)

@@ -27,4 +27,19 @@ exports.uploadSingleImage = (fieldName) => {
     });
   };
 };
-exports.uploadArrayOfImages = (fieldName) => multerOptions().array(fieldName, 5);
+exports.uploadArrayOfImages = (fieldName) => multerOptions().array(fieldName, { min: 3, max: 5 });
+exports.validateImageCount = (req, res, next) => {
+  if (!req.files) {
+    return res.status(400).json({ error: 'No files were uploaded.' });
+  }
+
+  const fileCount = req.files.length;
+  if (fileCount < 3) {
+    return res.status(400).json({ error: 'At least 3 images are required.' });
+  }
+  if (fileCount > 5) {
+    return res.status(400).json({ error: 'Only 5 images are allowed.' });
+  }
+
+  next();
+};

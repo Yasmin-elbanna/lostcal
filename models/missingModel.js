@@ -27,6 +27,10 @@ phoneNumber:{
   match:[/^01[0125][0-9]{8}$/,'phone number not correct']
 
 },
+user: {
+  type: mongoose.Schema.ObjectId,
+  ref: 'users',
+},
      
 
 },{ timestamps: true });

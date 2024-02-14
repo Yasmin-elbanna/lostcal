@@ -23,6 +23,7 @@ const addMissing= (req, res) => {
    
       // Create a new instance of the MissingModel model
       const newMissing = new missingModel({
+        user:  req.user._id,
        name:name,
        age:age, 
        address:address, 
@@ -33,5 +34,28 @@ const addMissing= (req, res) => {
      newMissing.save() ;
     res.status(200).send("saved successfully")
     }
-  module.exports={addMissing}
+    const myreq= async (req, res, next) => {
+      const findreq = await missingModel.find({user:req.user._id});
+      if (findreq) return res.send(findreq);
+     console.log(findreq)
+      return next(
+         new ApiError("requst not found",404)
+      );
+    };
+    const clearReq=async(req,res,nxt)=>{
+      const {id}=req.params
+      await missingModel.findOneAndDelete(id);
+      res.status(200).send("request deleted sucessfully");
+    }
+    
+    const search= async (req, res, next) => {
+      const findreq = await missingModel.find({name:req.body.name});
+      if (findreq && findreq.lengh>0) return res.send(findreq);
+     console.log(findreq)
+      return next(
+         new ApiError(" not found",404)
+      );
+    };
+
+  module.exports={addMissing,myreq,clearReq,search}
 
