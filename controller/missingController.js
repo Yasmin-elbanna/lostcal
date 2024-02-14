@@ -50,7 +50,7 @@ const addMissing= (req, res) => {
     
     const search= async (req, res, next) => {
       const findreq = await missingModel.find({name:req.body.name});
-      if (findreq && findreq.lengh>0) return res.send(findreq);
+      if (findreq && !findreq.isEmpty()) return res.send(findreq);
      console.log(findreq)
       return next(
          new ApiError(" not found",404)
