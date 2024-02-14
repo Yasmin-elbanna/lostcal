@@ -48,14 +48,19 @@ const addMissing= (req, res) => {
       res.status(200).send("request deleted sucessfully");
     }
     
-    const search= async (req, res, next) => {
-      const findreq = await missingModel.find({name:req.body.name});
-      if (findreq && !findreq.isEmpty()) return res.send(findreq);
-     console.log(findreq)
-      return next(
-         new ApiError(" not found",404)
-      );
+    const search = async (req, res, next) => {
+      try {
+        const findreq = await missingModel.find({ name: req.body.name });
+        if (findreq && findreq.length > 0) {
+          return res.send(findreq);
+        } else {
+          throw new ApiError("Not found", 404);
+        }
+      } catch (error) {
+        return next(error); // Pass the error to the error handling middleware
+      }
     };
+    
 
   module.exports={addMissing,myreq,clearReq,search}
 
