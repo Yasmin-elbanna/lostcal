@@ -14,7 +14,7 @@ const addValidate=[
         }
        })
     ,check('phoneNumber').notEmpty().withMessage("please entre your phone number").isNumeric().withMessage("Not valid phone number").matches(/^01[0125][0-9]{8}$/).withMessage("Not valid phone number")
-    ,check('address').notEmpty().withMessage("please entre your address").isAlpha().withMessage("Invalid address"),
+    ,check('address').notEmpty().withMessage("please entre your address"),
 ];
 
 

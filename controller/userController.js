@@ -48,7 +48,7 @@ const login=async(req,res,next)=>{
     const copmarpass = await bcrypt.compare(password, finduser.password);
     if (copmarpass) {
       const token = await finduser.generateToken();
-       return res.status(200).send(token);
+       return res.status(200).send({token:token});
     }
    
     return next(
