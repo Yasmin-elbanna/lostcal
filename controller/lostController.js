@@ -11,25 +11,14 @@ const addLost= (req, res) => {
     }
     console.log('Request received in /add endpoint');
     console.log('Req.body:', req.body); // Log the request body
-    console.log('Req.files:', req.files); // Log the files received in the request
+    console.log('Req.files:', req.file); // Log the files received in the request
   
     const { name,address,email,phoneNumber} = req.body;
     
-    let image = {}; // Initialize image as an empty object
+    const image = req.file; // Assuming single image upload
 
     // Check if files are uploaded and if there's at least one file
-    if (req.files && req.files.length > 0) {
-        const file = req.files[0]; // Get the first file from req.files
     
-        // Assign properties of the file to image
-        image = {
-            data: file.buffer,
-            contentType: file.mimetype
-        };
-    } else {
-        // Handle case where no files are uploaded
-        console.log('No files uploaded with the request');
-    }
     
       // Create a new instance of the MissingModel model
       const newLost = new lostModel({
@@ -38,7 +27,10 @@ const addLost= (req, res) => {
        address:address, 
        email:email,
        phoneNumber:phoneNumber,
-      img: image,
+      img: {
+        data: image.buffer,
+        contentType: image.mimetype
+      },
       });
      newLost.save() ;
     res.status(200).send("saved successfully")

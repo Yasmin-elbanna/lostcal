@@ -9,7 +9,7 @@ const schema = mongoose.Schema({
   name:{
     type:String,
   },
-  img:[imageSchema],
+  img:imageSchema,
   address:{
     type:String
   },
