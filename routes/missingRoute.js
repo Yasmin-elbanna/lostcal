@@ -2,13 +2,14 @@ const {addMissing,myreq,clearReq,search,updateMissing}=require('../controller/mi
 const express = require("express");
 const router = express.Router();
 const {uploadArrayOfImages,validateImageCount} = require("../middleware/uploadImages");
-const{addValidate}=require("../validation/missingValidation")
+const{missingValidate}=require("../validation/missingValidation")
 const {authorized}=require('../middleware/authorization')
 
-router.post('/add',authorized ,uploadArrayOfImages(['img']),validateImageCount,addValidate,addMissing)
+router.post('/add',authorized ,uploadArrayOfImages(['img']),validateImageCount,missingValidate,addMissing)
 router.get('/myreq',authorized ,myreq)
 router.delete('/myreq/:id',authorized,clearReq)
 router.get('/search',authorized,search)
-router.put('/updateData/:id',authorized,uploadArrayOfImages(['img']),validateImageCount,addValidate,updateMissing)
+router.put('/updateData/:id',authorized,uploadArrayOfImages(['img']),validateImageCount,missingValidate,updateMissing)
+
 
 module.exports = router;

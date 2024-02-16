@@ -1,6 +1,6 @@
 const {check}=require("express-validator")
-const missing=require('../models/missingModel')
-const missingValidate=[
+const missing=require('../models/lostModel')
+const lostValidate=[
     check('name').notEmpty().withMessage("please entre your name")
     ,
     check('email').notEmpty().withMessage("please entre your email").isEmail().withMessage("Invalid email").custom(async (value, req) => {
@@ -19,5 +19,5 @@ const missingValidate=[
 
 
 
-module.exports={missingValidate}
+module.exports={lostValidate}
     
