@@ -7,15 +7,14 @@ const lostRoute=require('./routes/lostRoute');
 const env=require("dotenv")
 const cors = require('cors');
 const bodyParser=require('body-parser')
-
+const morgan=require('morgan')
 const app=express();
-app.use(cors());
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8000');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
+app.use(cors({
+    origin:"http://localhost:8000",
+    methods:["GET","POST","DELETE","PUT","PATCH"],
+}));
+app.use(morgan('dev'))
+
 const publicerror=require('./errors/errors')
 env.config({path:'config.env'})
 
