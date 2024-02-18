@@ -3,8 +3,8 @@ const { validationResult } = require('express-validator');
 const ApiError=require('../errors/apierror')
 const missingModel=require('../models/missingModel')
 
-
 const addMissing= (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
     const errors=validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
