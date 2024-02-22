@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken')
 
 
 const signup = async (req, res) => {
-    const {username, email, password } = req.body;
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const {username, email, password } = req.body;
     const errors=validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
@@ -17,7 +18,6 @@ const signup = async (req, res) => {
             email,
           password,
          
-          
         });
         const token = jwt.sign({
           id: newuser._id,
@@ -33,7 +33,9 @@ const signup = async (req, res) => {
   };
 
 const login=async(req,res,next)=>{
-    const { email, password } = req.body;
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  const { email, password } = req.body;
     const finduser = await usermodel.findOne({email});
     const errors=validationResult(req);
     if(!errors.isEmpty()){
@@ -56,4 +58,13 @@ const login=async(req,res,next)=>{
       );
    }
   }
-  module.exports={signup,login}
+
+  const myinfo= async (req, res, next) => {
+    const findinfo = await usermodel.findOne({user:req.user._id});
+    if (findinfo) res.send(findinfo);
+   console.log(findinfo)
+    return next(
+       new ApiError("user not found",404)
+    );
+  };
+  module.exports={signup,login,myinfo}

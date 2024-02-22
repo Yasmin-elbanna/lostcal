@@ -12,6 +12,7 @@ const app=express();
 
 app.use(cors({
     origin:"*",
+    
 }));
 
 app.use(morgan('dev'))

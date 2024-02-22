@@ -24,6 +24,7 @@ const schema = mongoose.Schema({
     },
   
     passwordChangedAt: Date,
+    
     isAdmin:{
         type:Boolean,
         default:false,
