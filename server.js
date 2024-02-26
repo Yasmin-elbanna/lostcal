@@ -15,7 +15,10 @@ app.use(cors({
     
 }));
 
-app.use(morgan('dev'))
+if(process.env.NODE_ENV === 'development'){
+    app.use(morgan('dev'))
+
+}
 
 const publicerror=require('./errors/errors')
 env.config({path:'config.env'})

@@ -22,12 +22,30 @@ exports.uploadSingleImage = (fieldName) => {
         console.error('Error uploading single image:', err);
         return res.status(400).json({ error: 'Error uploading image' });
       }
+      if (!req.file) {
+        console.error('No file uploaded');
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
       console.log('Image uploaded successfully');
       next();
     });
   };
 };
-exports.uploadArrayOfImages = (fieldName) => multerOptions().array(fieldName, { min: 3, max: 5 });
+exports.uploadArrayOfImages = (fieldName) => {
+  return (req, res, next) => {
+    multerOptions().array(fieldName, { min: 3 })(req, res, function (err) {
+      if (err) {
+        console.error('Error uploading images:', err);
+        return res.status(400).json({ error: 'Error uploading images' });
+      }
+      if (!req.files || req.files.length === 0) {
+        console.error('No files uploaded');
+        return res.status(400).json({ error: 'No files uploaded' });
+      }
+      next(); // Call next to pass control to the next middleware in the chain
+    });
+  };
+};
 exports.validateImageCount = (req, res, next) => {
   if (!req.files) {
     return res.status(400).json({ error: 'No files were uploaded.' });

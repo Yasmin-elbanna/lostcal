@@ -4,7 +4,7 @@ const ApiError=require('../errors/apierror')
 const lostModel=require('../models/lostModel')
 
 
-const addLost= (req, res) => {
+const addLost=async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     const errors=validationResult(req);
     if(!errors.isEmpty()){
@@ -12,7 +12,7 @@ const addLost= (req, res) => {
     }
     console.log('Request received in /add endpoint');
     console.log('Req.body:', req.body); // Log the request body
-    console.log('Req.files:', req.file); // Log the files received in the request
+    console.log('Req.file:', req.file); // Log the files received in the request
   
     const { name,address,email,phoneNumber} = req.body;
     
@@ -33,7 +33,7 @@ const addLost= (req, res) => {
         contentType: image.mimetype
       },
       });
-     newLost.save() ;
+     await newLost.save() ;
     res.status(200).send("saved successfully")
     }
 
