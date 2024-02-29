@@ -1,16 +1,28 @@
 const multer = require('multer');
-const ApiError = require('../errors/apierror');
+const apiError = require('../errors/apierror');
 
 const multerOptions = () => {
-  const multerStorage = multer.memoryStorage();
-  const multerFilter = function (req, file, cb) {
-    if (file.mimetype.startsWith('image')) {
-      cb(null, true);
-    } else {
-      cb(new ApiError('Only Images allowed', 400), false);
+  const storage = multer.diskStorage({
+    filename: function(req, file, cb) {
+        cb(null, file.originalname);
     }
-  };
-  const upload = multer({ storage: multerStorage, fileFilter: multerFilter });
+});
+
+const multerFilter = (req, file, cb) => {
+    // Check if the file type is an image
+    if (file.mimetype.startsWith('image/')) {
+        // Accept the file
+        cb(null, true);
+    } else {
+        // Reject the file
+      cb(new apiError('Only images are allowed',400));
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    fileFilter: multerFilter
+});
   return upload;
 };
 
@@ -19,12 +31,15 @@ exports.uploadSingleImage = (fieldName) => {
     console.log(`Middleware: Uploading single image for field ${fieldName}`);
     multerOptions().single(fieldName)(req, res, function (err) {
       if (err) {
-        console.error('Error uploading single image:', err);
-        return res.status(400).json({ error: 'Error uploading image' });
+       next(
+        new apiError(err.message,400)
+       )
       }
       if (!req.file) {
         console.error('No file uploaded');
-        return res.status(400).json({ error: 'No file uploaded' });
+        next(
+          new apiError('No file uploaded' ,400)
+         )
       }
       console.log('Image uploaded successfully');
       next();
@@ -35,7 +50,7 @@ exports.uploadArrayOfImages = (fieldName) => {
   return (req, res, next) => {
     multerOptions().array(fieldName, { min: 3 })(req, res, function (err) {
       if (err) {
-        console.error('Error uploading images:', err);
+        console.error('Error uploading images:', err.apiError.message);
         return res.status(400).json({ error: 'Error uploading images' });
       }
       if (!req.files || req.files.length === 0) {

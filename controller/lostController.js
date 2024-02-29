@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler');
 const { validationResult } = require('express-validator');
 const ApiError=require('../errors/apierror')
 const lostModel=require('../models/lostModel')
-
+const cloudinary=require('../middleware/cloudinary');
 
 const addLost=async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,31 +10,38 @@ const addLost=async (req, res) => {
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
     }
-    console.log('Request received in /add endpoint');
-    console.log('Req.body:', req.body); // Log the request body
-    console.log('Req.file:', req.file); // Log the files received in the request
-  
-    const { name,address,email,phoneNumber} = req.body;
-    
-    const image = req.file; // Assuming single image upload
+    cloudinary.uploader.upload(req.file.path,{ folder: 'lostcal' },async(err,result)=>{
+        if(err) {
+           console.log(err);
+           return  res.status(500).json({
+                success:false,
+                message:"error uploading image"
+           })
+        }  
+        try {
+            const savedData = await lostModel.create({
+                img: result.secure_url,
+                name: req.body.name,
+                address:req.body.address,
+                phoneNumber:req.body.phoneNumber,
+                email:req.body.email
 
-    // Check if files are uploaded and if there's at least one file
+            });
     
-    
-      // Create a new instance of the MissingModel model
-      const newLost = new lostModel({
-        user:  req.user._id,
-       name:name,
-       address:address, 
-       email:email,
-       phoneNumber:phoneNumber,
-      img: {
-        data: image.buffer,
-        contentType: image.mimetype
-      },
-      });
-     await newLost.save() ;
-    res.status(200).send("saved successfully")
+            res.status(200).json({
+                success: true,
+                message: "Uploaded",
+                data: savedData
+            });
+        } catch (error) {
+            console.error('Error saving data to database:', error);
+            res.status(500).json({
+                success: false,
+                message: "Error saving data to database"
+            });
+        }
+    });
+
     }
 
 

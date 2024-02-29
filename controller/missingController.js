@@ -2,39 +2,61 @@ const asyncHandler = require('express-async-handler');
 const { validationResult } = require('express-validator');
 const ApiError=require('../errors/apierror')
 const missingModel=require('../models/missingModel')
+const cloudinary=require('../middleware/cloudinary');
 
-const addMissing= (req, res) => {
+const addMissing= async(req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     const errors=validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
     }
-    console.log('Request received in /add endpoint');
-    console.log('Req.body:', req.body); // Log the request body
-    console.log('Req.files:', req.files); // Log the files received in the request
-  
-    const { name,age,address,email,phoneNumber} = req.body;
-    
-      // Create an array of objects with img data and contentType for each field
-      const imagesArray = req.files.map(file => ({
-        data: file.buffer,
-        contentType: file.mimetype,
-      }));
-   
-      
-      // Create a new instance of the MissingModel model
-      const newMissing = new missingModel({
-        user:  req.user._id,
-       name:name,
-       age:age, 
-       address:address, 
-       email:email,
-       phoneNumber:phoneNumber,
-      img: imagesArray,
+   // console.log(req.files)
+    const images=[];
+   const promises = req.files.map((file) => {
+      return new Promise((resolve, reject) => {
+         cloudinary.uploader.upload(file.path,{ folder: 'lostcal' },(err,result)=>{
+            if(err) {
+               console.log(err);
+               return  res.status(500).json({
+                    success:false,
+                    message:"error uploading image"
+               })
+            }
+            try {
+               images.push( result.secure_url);
+               resolve();
+            } catch (error) {
+               console.error('Error uploading images', error);
+               res.status(500).json({
+                    success: false,
+                    message: "Error uploading images"
+                });
+               reject();
+            }
+         })
       });
-     newMissing.save() ;
-    res.status(200).send("saved successfully")
-    }
+   });
+
+   await Promise.all(promises);
+
+   const savedData = await missingModel.create({
+      img:images,
+      name: req.body.name,
+      address:req.body.address,
+      phoneNumber:req.body.phoneNumber,
+      email:req.body.email,
+      age:req.body.age
+   });
+
+   res.status(200).json({
+      success: true,
+      message: "Uploaded",
+      data: savedData
+   });
+};
+   
+   
+    
     const myreq= async (req, res, next) => {
       const findreq = await missingModel.find({user:req.user._id});
       if (findreq) return res.send(findreq);
@@ -65,22 +87,20 @@ const addMissing= (req, res) => {
                   const imageDataArray = [];
   
                   // Loop through each image object in the document's 'img' array
-                  for (const imageObject of document.img) {
-                      // Add the image data and contentType to the imageDataArray
-                      imageDataArray.push({
-                          data: imageObject.data.toString('base64'), // Convert binary data to base64 string
-                          contentType: imageObject.contentType
+         
+                 // Add the image data and contentType to the imageDataArray
+                imageDataArray.push({
+                   document
                       });
-                  }
+                  
   
                   // Prepare the response data object for the current document
                   const responseData = {
                       name: document.name,
                       age: document.age,
                       address: document.address,
-                      email: document.email,
                       phoneNumber: document.phoneNumber,
-                      images: imageDataArray
+                      images: document.img
                   };
   
                   // Push the responseData object to the responseDataArray

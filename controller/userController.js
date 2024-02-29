@@ -60,8 +60,11 @@ const login=async(req,res,next)=>{
   }
 
   const myinfo= async (req, res, next) => {
-    const findinfo = await usermodel.findOne({user:req.user._id});
-    if (findinfo) res.send(findinfo);
+    const user = req.user._id
+    console.log(user)
+    const findinfo = await usermodel.findOne({_id:user});
+    if (findinfo) 
+    return res.send([findinfo.username, findinfo.email]);
    console.log(findinfo)
     return next(
        new ApiError("user not found",404)

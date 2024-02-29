@@ -1,15 +1,15 @@
 const  mongoose  = require("mongoose");
 
-const imageSchema = new mongoose.Schema({
-  data: Buffer,
-  contentType: String,
-});
+
 
 const schema = mongoose.Schema({
   name:{
     type:String,
   },
-  img:imageSchema,
+  img: {
+    type: String,
+    required: true
+} ,
   address:{
     type:String
   },

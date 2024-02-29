@@ -9,7 +9,6 @@ const cors = require('cors');
 const bodyParser=require('body-parser')
 const morgan=require('morgan')
 const app=express();
-
 app.use(cors({
     origin:"*",
     
@@ -19,13 +18,11 @@ if(process.env.NODE_ENV === 'development'){
     app.use(morgan('dev'))
 
 }
-
 const publicerror=require('./errors/errors')
 env.config({path:'config.env'})
-
-
 app.use(bodyParser.urlencoded({ extended: true }));
-
+ 
+  
 app.use(express.json());
 app.use(["/user"], userRoute);
 app.use(["/missing"], missingRoute);
