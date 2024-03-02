@@ -6,8 +6,8 @@ const{missingValidate}=require("../validation/missingValidation")
 const {authorized}=require('../middleware/authorization')
 
 router.post('/add',authorized ,uploadArrayOfImages(['img']),validateImageCount,missingValidate,addMissing)
-router.get('/myreq',authorized ,myreq)
-router.delete('/myreq/:id',authorized,clearReq)
+//router.get('/myreq',authorized ,myreq)
+//router.delete('/myreq/:id',authorized,clearReq)
 router.get('/search',authorized,search)
 //router.put('/updateData/:id',authorized,uploadArrayOfImages(['img']),validateImageCount,missingValidate,updateMissing)
 

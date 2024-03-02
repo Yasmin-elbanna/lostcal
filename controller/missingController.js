@@ -152,7 +152,6 @@ const addMissing= async(req, res) => {
         if (!existingMissing) {
             return res.status(404).json({ errors: [{ msg: 'Missing person not found' }] });
         }
-
         // Update the fields
         existingMissing.name = name;
         existingMissing.age = age;
