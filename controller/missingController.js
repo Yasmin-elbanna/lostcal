@@ -74,7 +74,7 @@ const addMissing= async(req, res) => {
     const search = async (req, res, next) => {
       try {
           // Search for documents where the 'name' field matches the value in req.body.name
-          const findreq = await missingModel.find({ name: req.body.name });
+          const findreq = await missingModel.find({ name: req.query.name });
   
           // Check if any documents were found
           if (findreq && findreq.length > 0) {
