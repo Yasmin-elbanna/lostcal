@@ -108,7 +108,7 @@ const addMissing= async(req, res) => {
               }
   
               // Send the response data array in the response body
-              res.json(responseDataArray);
+              res.json({"result":responseDataArray});
           } else {
               // If no documents are found, send a 404 response
               res.status(404).json({ error: 'Documents not found' });
