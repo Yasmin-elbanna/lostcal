@@ -4,6 +4,7 @@ const ApiError=require('../errors/apierror')
 const usermodel=require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const lostModel=require('../models/lostModel')
+const mylostModel=require('../models/missingModel')
 
 const signup = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -79,7 +80,8 @@ const login=async(req,res,next)=>{
       name: item.name,
       address: item.address,
       img: item.img,
-      phoneNumber: item.phoneNumber
+      phoneNumber: item.phoneNumber,
+      email: item.email
   }));
     if (findinfo && findinfo.length > 0) 
     return res.json(filteredResponse)
@@ -88,5 +90,23 @@ const login=async(req,res,next)=>{
        new ApiError("user not found",404)
     );
   };
+  const mylostReq= async (req, res, next) => {
+    const user = req.user._id
+    console.log(user)
+    const findinfo = await mylostModel.find({user:user}).populate("user").maxTime(10000);
+    const filteredResponse = findinfo.map(item => ({
+      name: item.name,
+      address: item.address,
+      img: item.img,
+      phoneNumber: item.phoneNumber,
+      email: item.email,
+      age: item.age
+  }));
+    if (findinfo && findinfo.length > 0) 
+    return res.json(filteredResponse)
 
-  module.exports={signup,login,myinfo,lostReq}
+    return next(
+       new ApiError("user not found",404)
+    );
+  };
+  module.exports={signup,login,myinfo,lostReq,mylostReq}

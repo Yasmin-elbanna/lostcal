@@ -45,7 +45,8 @@ const addMissing= async(req, res) => {
       address:req.body.address,
       phoneNumber:req.body.phoneNumber,
       email:req.body.email,
-      age:req.body.age
+      age:req.body.age,
+      user:req.user._id
    });
 
    res.status(200).json({
@@ -100,7 +101,7 @@ const addMissing= async(req, res) => {
                       age: document.age,
                       address: document.address,
                       phoneNumber: document.phoneNumber,
-                      images: document.img
+                      images: document.img,
                   };
   
                   // Push the responseData object to the responseDataArray
