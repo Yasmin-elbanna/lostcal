@@ -3,7 +3,7 @@ const bcrypt=require('bcrypt')
 const ApiError=require('../errors/apierror')
 const usermodel=require('../models/userModel')
 const jwt = require('jsonwebtoken')
-
+const lostModel=require('../models/lostModel')
 
 const signup = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -71,4 +71,22 @@ const login=async(req,res,next)=>{
        new ApiError("user not found",404)
     );
   };
-  module.exports={signup,login,myinfo}
+  const lostReq= async (req, res, next) => {
+    const user = req.user._id
+    console.log(user)
+    const findinfo = await lostModel.find({user:user}).populate("user").maxTime(10000);
+    const filteredResponse = findinfo.map(item => ({
+      name: item.name,
+      address: item.address,
+      img: item.img,
+      phoneNumber: item.phoneNumber
+  }));
+    if (findinfo && findinfo.length > 0) 
+    return res.json(filteredResponse)
+
+    return next(
+       new ApiError("user not found",404)
+    );
+  };
+
+  module.exports={signup,login,myinfo,lostReq}

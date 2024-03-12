@@ -24,8 +24,8 @@ const addLost=async (req, res) => {
                 name: req.body.name,
                 address:req.body.address,
                 phoneNumber:req.body.phoneNumber,
-                email:req.body.email
-
+                email:req.body.email,
+               user:req.user._id
             });
     
             res.status(200).json({
