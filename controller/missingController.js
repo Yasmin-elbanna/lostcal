@@ -12,6 +12,7 @@ const addMissing= async(req, res) => {
     }
    // console.log(req.files)
     const images=[];
+    const publicID=[]
    const promises = req.files.map((file) => {
       return new Promise((resolve, reject) => {
          cloudinary.uploader.upload(file.path,{ folder: 'lostcal' },(err,result)=>{
@@ -24,6 +25,8 @@ const addMissing= async(req, res) => {
             }
             try {
                images.push( result.secure_url);
+               
+               publicID.push(result.public_id);
                resolve();
             } catch (error) {
                console.error('Error uploading images', error);
@@ -38,9 +41,9 @@ const addMissing= async(req, res) => {
    });
 
    await Promise.all(promises);
-
    const savedData = await missingModel.create({
       img:images,
+      publicId:publicID,
       name: req.body.name,
       address:req.body.address,
       phoneNumber:req.body.phoneNumber,
@@ -48,7 +51,6 @@ const addMissing= async(req, res) => {
       age:req.body.age,
       user:req.user._id
    });
-
    res.status(200).json({
       success: true,
       message: "Uploaded",
@@ -56,21 +58,7 @@ const addMissing= async(req, res) => {
    });
 };
    
-   
-    
-    const myreq= async (req, res, next) => {
-      const findreq = await missingModel.find({user:req.user._id});
-      if (findreq) return res.send(findreq);
-     console.log(findreq)
-      return next(
-         new ApiError("requst not found",404)
-      );
-    };
-    const clearReq=async(req,res,nxt)=>{
-      const {id}=req.params
-      await missingModel.findOneAndDelete(id);
-      res.status(200).send("request deleted sucessfully");
-    }
+
     
     const search = async (req, res, next) => {
       try {
@@ -121,16 +109,14 @@ const addMissing= async(req, res) => {
       }
   };
   
+
     
   const updateMissing = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    console.log('Request received in /update endpoint');
-    console.log('Req.body:', req.body); // Log the request body
-    console.log('Req.files:', req.files); // Log the files received in the request
-
+ 
     const {  name, age, address, email, phoneNumber } = req.body;
    const {id}= req.params;
 
@@ -171,5 +157,31 @@ const addMissing= async(req, res) => {
     }
 };
 
-  module.exports={addMissing,myreq,clearReq,search,updateMissing}
+
+   
+    const deleteMylost = async (req, res,nxt) => {
+        try {
+          const { id } = req.params;
+          const publicId = await missingModel.findOne({ _id: id });
+      
+          if (!publicId) {
+            nxt( new ApiError("Missing not found.",500));
+          }
+      
+          await missingModel.findOneAndDelete({ _id: id });
+          const removedImg=publicId.publicId
+          await cloudinary.api.delete_resources(removedImg);
+      
+          res.status(200).send("Request deleted successfully.");
+        } catch (error) {
+          console.error(error);
+          nxt(new ApiError(("An error occurred while deleting the request."),500));
+        }
+      };
+
+
+
+
+
+  module.exports={addMissing,deleteMylost,search,updateMissing}
 

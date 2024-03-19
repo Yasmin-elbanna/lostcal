@@ -21,6 +21,7 @@ const addLost=async (req, res) => {
         try {
             const savedData = await lostModel.create({
                 img: result.secure_url,
+                publicId: result.public_id,
                 name: req.body.name,
                 address:req.body.address,
                 phoneNumber:req.body.phoneNumber,
@@ -45,11 +46,24 @@ const addLost=async (req, res) => {
     }
 
 
-    const clearReq=async(req,res,nxt)=>{
-      const {id}=req.params
-      await lostModel.findOneAndDelete(id);
-      res.status(200).send("request deleted sucessfully");
-    }
+    const deleteLost=async(req,res,nxt)=>{
+        
+            try {
+              const { id } = req.params;
+              const publicId = await lostModel.findOne({ _id: id });
+
+              await lostModel.findOneAndDelete({ _id: id });
+              const removedImg=publicId.publicId
+              await cloudinary.uploader.destroy(removedImg);
+              
+              res.status(200).send("Request deleted successfully.");
+            
+            } catch (error) {
+              console.error(error);
+              res.status(500).send("An error occurred while deleting the request.");
+            }
+          };
+    
     
     
   const updateLost = async (req, res) => {
@@ -113,5 +127,5 @@ const addLost=async (req, res) => {
     }
 };
 
-  module.exports={addLost,clearReq,updateLost}
+  module.exports={addLost,deleteLost,updateLost}
 

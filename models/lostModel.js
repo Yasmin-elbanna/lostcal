@@ -7,6 +7,9 @@ const schema = mongoose.Schema({
     type: String,
     required: true
 } ,
+publicId:{
+  type:String
+},
   address:{
     type:String
   },

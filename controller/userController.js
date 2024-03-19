@@ -75,13 +75,14 @@ const login=async(req,res,next)=>{
   const lostReq= async (req, res, next) => {
     const user = req.user._id
     console.log(user)
-    const findinfo = await lostModel.find({user:user}).populate("user").maxTime(10000);
+    const findinfo = await lostModel.find({user:user}).maxTime(10000);
     const filteredResponse = findinfo.map(item => ({
       name: item.name,
       address: item.address,
       img: item.img,
       phoneNumber: item.phoneNumber,
-      email: item.email
+      email: item.email,
+      id:item.id
   }));
     if (findinfo && findinfo.length > 0) 
     return res.json(filteredResponse)
@@ -93,14 +94,15 @@ const login=async(req,res,next)=>{
   const mylostReq= async (req, res, next) => {
     const user = req.user._id
     console.log(user)
-    const findinfo = await mylostModel.find({user:user}).populate("user").maxTime(10000);
+    const findinfo = await mylostModel.find({user:user}).maxTime(10000);
     const filteredResponse = findinfo.map(item => ({
       name: item.name,
       address: item.address,
       img: item.img,
       phoneNumber: item.phoneNumber,
       email: item.email,
-      age: item.age
+      age: item.age,
+      id:item.id
   }));
     if (findinfo && findinfo.length > 0) 
     return res.json(filteredResponse)
