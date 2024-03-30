@@ -2,16 +2,19 @@ const  mongoose  = require("mongoose");
 const schema = mongoose.Schema({
   name:{
     type:String,
+    required:true,
   },
   img: {
     type: String,
     required: true
 } ,
 publicId:{
-  type:String
+  type:String,
+  required:true
 },
   address:{
-    type:String
+    type:String,
+    required:true
   },
 
   email: {
@@ -21,8 +24,8 @@ publicId:{
 },
 phoneNumber:{
   type:Number,
-  match:[/^01[0125][0-9]{8}$/,'phone number not correct']
-
+  match:[/^01[0125][0-9]{8}$/,'phone number not correct'],
+required:true,
 },
 user: {
   type: mongoose.Schema.ObjectId,

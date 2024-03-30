@@ -1,6 +1,6 @@
 const {check}=require("express-validator")
 const User=require('../models/userModel')
-const apierror=require('../errors/apierror')
+const apierror=require('../middleware/apierror')
 const signupValidate=[check('username').notEmpty().withMessage("please entre your username").isLength({min:4}).withMessage("Invalid username")
     ,
     check('email').notEmpty().withMessage("please entre your email").isEmail().withMessage("Invalid email").custom(async (value, req) => {

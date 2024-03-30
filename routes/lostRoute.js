@@ -1,14 +1,15 @@
-const {addLost,deleteLost,updateLost}=require('../controller/lostController')
+const {addLost,deleteLost,lostReq}=require('../controller/lostController')
 const express = require("express");
 const router = express.Router();
 const {uploadSingleImage}=require('../middleware/uploadImages');
 
-const{lostValidate}=require("../validation/lostValidation")
+const{createlostValidator,deletelostValidator}=require("../validation/lostValidation")
 const {authorized}=require('../middleware/authorization')
 
-router.post('/',authorized ,uploadSingleImage('img'),lostValidate,addLost)
-router.delete('/:id',authorized,deleteLost)
+router.post('/',authorized ,uploadSingleImage('img'),createlostValidator,addLost)
+router.delete('/:id',authorized,deletelostValidator,deleteLost)
 //router.put('/:id',authorized,uploadSingleImage('img'),lostValidate,updateLost)
+router.get('/',authorized,lostReq)
 
 
 module.exports = router;

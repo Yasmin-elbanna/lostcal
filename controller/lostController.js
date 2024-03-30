@@ -1,15 +1,13 @@
 const asyncHandler = require('express-async-handler');
 const { validationResult } = require('express-validator');
-const ApiError=require('../errors/apierror')
+const ApiError=require('../middleware/apierror')
 const lostModel=require('../models/lostModel')
 const cloudinary=require('../middleware/cloudinary');
+const catchAsync=require('../middleware/catchAsync')
 
-const addLost=async (req, res) => {
+const addLost=catchAsync(async (req, res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    const errors=validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
-    }
+   
     cloudinary.uploader.upload(req.file.path,{ folder: 'lostcal' },async(err,result)=>{
         if(err) {
            console.log(err);
@@ -18,7 +16,7 @@ const addLost=async (req, res) => {
                 message:"error uploading image"
            })
         }  
-        try {
+      
             const savedData = await lostModel.create({
                 img: result.secure_url,
                 publicId: result.public_id,
@@ -34,35 +32,31 @@ const addLost=async (req, res) => {
                 message: "Uploaded",
                 data: savedData
             });
-        } catch (error) {
-            console.error('Error saving data to database:', error);
-            res.status(500).json({
-                success: false,
-                message: "Error saving data to database"
-            });
-        }
+         
     });
 
-    }
+})
 
 
-    const deleteLost=async(req,res,nxt)=>{
+    const deleteLost=catchAsync(async(req,res,next)=>{
         
-            try {
+          
               const { id } = req.params;
+             
               const publicId = await lostModel.findOne({ _id: id });
-
+              
+              if (!publicId) {
+                next( new ApiError("Missing not found.",404));
+              }
+          
               await lostModel.findOneAndDelete({ _id: id });
               const removedImg=publicId.publicId
               await cloudinary.uploader.destroy(removedImg);
               
               res.status(200).send("Request deleted successfully.");
             
-            } catch (error) {
-              console.error(error);
-              res.status(500).send("An error occurred while deleting the request.");
-            }
-          };
+          
+          });
     
     
     
@@ -126,6 +120,27 @@ const addLost=async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 };
+const lostReq= async (req, res, next) => {
+    const user = req.user._id
+    const findinfo = await lostModel.find({user:user}).maxTime(10000);
+    if(! findinfo){
+      return next(
+        new ApiError("user not found",404)
+     );
+      }
+    const filteredResponse = findinfo.map(item => ({
+      name: item.name,
+      address: item.address,
+      img: item.img,
+      phoneNumber: item.phoneNumber,
+      email: item.email,
+      id:item.id
+  }));
+  
+    if (findinfo && findinfo.length > 0) 
+    return res.json(filteredResponse)
 
-  module.exports={addLost,deleteLost,updateLost}
+   
+  };
+  module.exports={addLost,deleteLost,updateLost,lostReq}
 

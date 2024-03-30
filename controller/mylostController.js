@@ -1,16 +1,12 @@
 const asyncHandler = require('express-async-handler');
-const { validationResult } = require('express-validator');
-const ApiError=require('../errors/apierror')
-const missingModel=require('../models/missingModel')
+const ApiError=require('../middleware/apierror')
+const mylostModel=require('../models/mylostModel')
 const cloudinary=require('../middleware/cloudinary');
+const catchAsync = require('../middleware/catchAsync');
 
-const addMissing= async(req, res) => {
+const addMylost= async(req, res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    const errors=validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
-    }
-   // console.log(req.files)
+  
     const images=[];
     const publicID=[]
    const promises = req.files.map((file) => {
@@ -41,7 +37,7 @@ const addMissing= async(req, res) => {
    });
 
    await Promise.all(promises);
-   const savedData = await missingModel.create({
+   const savedData = await mylostModel.create({
       img:images,
       publicId:publicID,
       name: req.body.name,
@@ -58,12 +54,34 @@ const addMissing= async(req, res) => {
    });
 };
    
+const mylostReq= async (req, res, next) => {
+    const user = req.user._id
+    console.log(user)
+    const findinfo = await mylostModel.find({user:user}).maxTime(10000);
+    if(! findinfo){
+    return next(
+      new ApiError("user not found",404)
+   );
+    }
+    const filteredResponse = findinfo.map(item => ({
+      name: item.name,
+      address: item.address,
+      img: item.img,
+      phoneNumber: item.phoneNumber,
+      email: item.email,
+      age: item.age,
+      id:item.id
+  }));
+    if (findinfo && findinfo.length > 0) 
+    return res.json(filteredResponse)
 
+  
+  };
     
-    const search = async (req, res, next) => {
-      try {
+    const search = catchAsync(async (req, res, next) => {
+     
           // Search for documents where the 'name' field matches the value in req.body.name
-          const findreq = await missingModel.find({ name: req.query.name });
+          const findreq = await mylostModel.find({ name: req.query.name });
   
           // Check if any documents were found
           if (findreq && findreq.length > 0) {
@@ -82,7 +100,6 @@ const addMissing= async(req, res) => {
                    document
                       });
                   
-  
                   // Prepare the response data object for the current document
                   const responseData = {
                       name: document.name,
@@ -97,17 +114,13 @@ const addMissing= async(req, res) => {
               }
   
               // Send the response data array in the response body
-              res.json({"result":responseDataArray});
+              res.status(200).json({"result":responseDataArray});
           } else {
               // If no documents are found, send a 404 response
-              res.status(404).json({ error: 'Documents not found' });
+              return next(new ApiError("this name not found",404))
           }
-      } catch (error) {
-          // Handle any errors that occur during the retrieval process
-          console.error('Error retrieving documents:', error);
-          res.status(500).json({ error: 'Internal server error' });
-      }
-  };
+      
+  });
   
 
     
@@ -159,13 +172,13 @@ const addMissing= async(req, res) => {
 
 
    
-    const deleteMylost = async (req, res,nxt) => {
-        try {
+    const deleteMylost = catchAsync(async (req, res,next) => {
+       
           const { id } = req.params;
-          const publicId = await missingModel.findOne({ _id: id });
+          const publicId = await mylostModel.findOne({ _id: id });
       
           if (!publicId) {
-            nxt( new ApiError("Missing not found.",500));
+            next( new ApiError("Missing not found.",404));
           }
       
           await missingModel.findOneAndDelete({ _id: id });
@@ -173,15 +186,12 @@ const addMissing= async(req, res) => {
           await cloudinary.api.delete_resources(removedImg);
       
           res.status(200).send("Request deleted successfully.");
-        } catch (error) {
-          console.error(error);
-          nxt(new ApiError(("An error occurred while deleting the request."),500));
-        }
-      };
+        
+      });
 
 
 
 
 
-  module.exports={addMissing,deleteMylost,search,updateMissing}
+  module.exports={addMylost,mylostReq,deleteMylost,search,updateMissing}
 

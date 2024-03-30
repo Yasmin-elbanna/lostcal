@@ -1,15 +1,19 @@
-const {check}=require("express-validator")
-const missing=require('../models/lostModel')
-const lostValidate=[
+const {check,body}=require("express-validator")
+const validatorMiddleware = require('../middleware/validator');
+
+const createlostValidator=[
     check('name').notEmpty().withMessage("please entre your name")
     ,
     check('email').notEmpty().withMessage("please entre your email").isEmail().withMessage("Invalid email")
     
-    ,check('phoneNumber').notEmpty().withMessage("please entre your phone number").isNumeric().withMessage("Not valid phone number").matches(/^01[0125][0-9]{8}$/).withMessage("Not valid phone number")
-    ,check('address').notEmpty().withMessage("please entre your address"),
+    ,check('phoneNumber').notEmpty().withMessage("please entre your phone number").matches(/^01[0125][0-9]{8}$/).withMessage("Invalid phone number")
+    ,check('address').notEmpty().withMessage("please entre your address"),validatorMiddleware
 ];
 
+const deletelostValidator = [
+    check('id').isMongoId().withMessage('Invalid lost id format'),
+    validatorMiddleware,
+  ];
 
-
-module.exports={lostValidate}
+module.exports={createlostValidator,deletelostValidator}
     

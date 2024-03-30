@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const utli = require('util')
 const asyncverify = utli.promisify(jwt.verify)
-const ApiError = require('../errors/apierror')
+const ApiError = require('./apierror')
 const User=require('../models/userModel')
 
 
