@@ -181,7 +181,7 @@ const mylostReq= async (req, res, next) => {
             next( new ApiError("Missing not found.",404));
           }
       
-          await missingModel.findOneAndDelete({ _id: id });
+          await mylostModel.findOneAndDelete({ _id: id });
           const removedImg=publicId.publicId
           await cloudinary.api.delete_resources(removedImg);
       
