@@ -9,34 +9,12 @@ const addMylost= async(req, res,next) => {
   
     const images=[];
     const publicID=[]
-   const promises = req.files.map((file) => {
-      return new Promise((resolve, reject) => {
-         cloudinary.uploader.upload(file.path,{ folder: 'lostcal' },(err,result)=>{
-            if(err) {
-               console.log(err);
-               return  res.status(500).json({
-                    success:false,
-                    message:"error uploading image"
-               })
-            }
-            try {
-               images.push( result.secure_url);
-               
-               publicID.push(result.public_id);
-               resolve();
-            } catch (error) {
-               console.error('Error uploading images', error);
-               res.status(500).json({
-                    success: false,
-                    message: "Error uploading images"
-                });
-               reject();
-            }
-         })
-      });
-   });
+    for (const file of req.files) {
+        const result = await cloudinary.uploader.upload(file.path, { folder: 'lostcal' });
+        images.push(result.secure_url);
+        publicID.push(result.public_id);
+    }
 
-   await Promise.all(promises);
    const savedData = await mylostModel.create({
       img:images,
       publicId:publicID,
@@ -54,7 +32,7 @@ const addMylost= async(req, res,next) => {
    });
 };
    
-const mylostReq= async (req, res, next) => {
+const mylostReq=catchAsync( async (req, res, next) => {
     const user = req.user._id
     console.log(user)
     const findinfo = await mylostModel.find({user:user}).maxTime(10000);
@@ -76,7 +54,7 @@ const mylostReq= async (req, res, next) => {
     return res.json(filteredResponse)
 
   
-  };
+  });
     
     const search = catchAsync(async (req, res, next) => {
      
@@ -124,51 +102,42 @@ const mylostReq= async (req, res, next) => {
   
 
     
-  const updateMissing = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
- 
+  const updateMylostData = catchAsync(async (req, res,next) => {
+
     const {  name, age, address, email, phoneNumber } = req.body;
    const {id}= req.params;
 
-    // Check if ID is provided
-    if (!id) {
-        return res.status(400).json({ errors: [{ msg: 'ID is required for updating' }] });
-    }
-
-    // Create an array of objects with img data and contentType for each field
-    const imagesArray = req.files.map(file => ({
-        data: file.buffer,
-        contentType: file.mimetype,
-    }));
-
-    try {
         // Find the existing missing person by ID
-        const existingMissing = await missingModel.findById(id);
-
+        const mylostData = await mylostModel.findById(id);
         // Check if the missing person exists
-        if (!existingMissing) {
-            return res.status(404).json({ errors: [{ msg: 'Missing person not found' }] });
+
+        if(!mylostData){
+            next( new ApiError("Missing not found.",404));
+
         }
-        // Update the fields
-        existingMissing.name = name;
-        existingMissing.age = age;
-        existingMissing.address = address;
-        existingMissing.email = email;
-        existingMissing.phoneNumber = phoneNumber;
-        existingMissing.img = imagesArray;
+        const removedImg=mylostData.publicId
+        await cloudinary.api.delete_resources(removedImg);
+        const images=[];
+        const publicID=[]
+        for (const file of req.files) {
+            const result = await cloudinary.uploader.upload(file.path, { folder: 'lostcal' });
+            images.push(result.secure_url);
+            publicID.push(result.public_id);
+        }
+   // console.log(images)
+      
+        const newData=await mylostModel.findByIdAndUpdate(id,{
+            name:name,
+            email:email,
+            address:address,
+            phoneNumber:phoneNumber,
+            age:age,
+            img:images,
+            publicId:publicID} 
+            );
 
-        // Save the updated missing person
-        await existingMissing.save();
-
-        res.status(200).send('Updated successfully');
-    } catch (error) {
-        console.error('Error updating missing person:', error);
-        res.status(500).send('Internal Server Error');
-    }
-};
+        res.status(200).json({"newData":newData});
+    } );
 
 
    
@@ -180,11 +149,12 @@ const mylostReq= async (req, res, next) => {
           if (!publicId) {
             next( new ApiError("Missing not found.",404));
           }
-      
-          await mylostModel.findOneAndDelete({ _id: id });
           const removedImg=publicId.publicId
+          //console.log(removedImg);
           await cloudinary.api.delete_resources(removedImg);
       
+          await mylostModel.findOneAndDelete({ _id: id });
+          
           res.status(200).send("Request deleted successfully.");
         
       });
@@ -193,5 +163,5 @@ const mylostReq= async (req, res, next) => {
 
 
 
-  module.exports={addMylost,mylostReq,deleteMylost,search,updateMissing}
+  module.exports={addMylost,mylostReq,deleteMylost,search,updateMylostData}
 
