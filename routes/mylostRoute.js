@@ -8,7 +8,7 @@ const {authorized}=require('../middleware/authorization')
 router.post('/',authorized ,uploadArrayOfImages(['img']),validateImageCount,addMylostValidate,addMylost)
 router.delete('/:id',authorized,deleteMylostValidator,deleteMylost)
 router.get('/search',authorized,search)
-router.patch('/:id',uploadArrayOfImages(['img']),validateImageCount,updateMylostValidator,updateMylostData)
+router.patch('/:id',authorized,uploadArrayOfImages(['img']),validateImageCount,updateMylostValidator,updateMylostData)
 router.get('/',authorized,mylostReq)
 
 
