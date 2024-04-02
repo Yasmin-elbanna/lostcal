@@ -2,7 +2,7 @@ require('./db')
 
 const express=require('express')
 const userRoute = require('./routes/userRoute');
-const missingRoute=require('./routes/mylostRoute');
+const mylostRoute=require('./routes/mylostRoute');
 const lostRoute=require('./routes/lostRoute');
 const env=require("dotenv")
 const cors = require('cors');
@@ -34,7 +34,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
   
 app.use(express.json());
 app.use(["/user"], userRoute);
-app.use(["/mylost"], missingRoute);
+app.use(["/mylost"], mylostRoute);
 app.use(["/lost"], lostRoute);
 
 

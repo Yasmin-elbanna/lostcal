@@ -1,6 +1,8 @@
 const {check}=require("express-validator")
 const User=require('../models/userModel')
 const apierror=require('../middleware/apierror')
+const validatorMiddleware = require('../middleware/validator');
+
 const signupValidate=[check('username').notEmpty().withMessage("please entre your username").isLength({min:4}).withMessage("Invalid username")
     ,
     check('email').notEmpty().withMessage("please entre your email").isEmail().withMessage("Invalid email").custom(async (value, req) => {
@@ -18,5 +20,10 @@ const signupValidate=[check('username').notEmpty().withMessage("please entre you
 
 const loginValidate=[check('email').notEmpty().withMessage('please entre email').isEmail().withMessage('Invalid email'),
 check('password').notEmpty()];
-module.exports={signupValidate,loginValidate}
-    
+const changeNameValidator = [
+    check('id').isMongoId().withMessage('Invalid lost id format'),
+    check('username').notEmpty().withMessage("please entre your username").isLength({min:4}).withMessage("Invalid username")
+    ,
+    validatorMiddleware,
+  ];
+  module.exports={signupValidate,loginValidate,changeNameValidator}

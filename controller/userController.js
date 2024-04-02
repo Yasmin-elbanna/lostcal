@@ -3,6 +3,8 @@ const bcrypt=require('bcrypt')
 const ApiError=require('../middleware/apierror')
 const usermodel=require('../models/userModel')
 const jwt = require('jsonwebtoken')
+const asyncHandler = require('express-async-handler');
+const catchAsync = require('../middleware/catchAsync');
 
 
 const signup = async (req, res) => {
@@ -59,7 +61,7 @@ const login=async(req,res,next)=>{
    }
   }
 
-  const myinfo= async (req, res, next) => {
+  const myinfo=catchAsync( async (req, res, next) => {
     const user = req.user._id
     console.log(user)
     const findinfo = await usermodel.findOne({_id:user});
@@ -70,7 +72,18 @@ const login=async(req,res,next)=>{
     return next(
        new ApiError("user not found",404)
     );
-  };
- 
+  });
+ const changeName=catchAsync(async(req,res,next)=>{
+  const { id } = req.params;
+  const user =await usermodel.findById(id);
+  if(!user){
+    return next(
+      new ApiError("user not found",404)
+   );
+  }
+  const { username } = req.body;
+  const updatproduct = await usermodel.findByIdAndUpdate(id,{username} );
+  res.status(200).send("updated username sucessfully")
 
-  module.exports={signup,login,myinfo}
+ })
+  module.exports={signup,login,myinfo,changeName}

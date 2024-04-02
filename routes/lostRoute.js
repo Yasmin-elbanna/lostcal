@@ -1,4 +1,4 @@
-const {addLost,deleteLost,lostReq}=require('../controller/lostController')
+const {addLost,deleteLost,lostReq,updateLostData}=require('../controller/lostController')
 const express = require("express");
 const router = express.Router();
 const {uploadSingleImage}=require('../middleware/uploadImages');
@@ -8,7 +8,7 @@ const {authorized}=require('../middleware/authorization')
 
 router.post('/',authorized ,uploadSingleImage('img'),createlostValidator,addLost)
 router.delete('/:id',authorized,deletelostValidator,deleteLost)
-//router.put('/:id',authorized,uploadSingleImage('img'),lostValidate,updateLost)
+router.patch('/:id',authorized,uploadSingleImage('img'),updateLostData)
 router.get('/',authorized,lostReq)
 
 

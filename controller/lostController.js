@@ -60,66 +60,40 @@ const addLost=catchAsync(async (req, res,next) => {
     
     
     
-  const updateLost = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    console.log('Request received in /update endpoint');
-    console.log('Req.body:', req.body); // Log the request body
-    console.log('Req.files:', req.files); // Log the files received in the request
+  
+          const updateLostData = catchAsync(async (req, res,next) => {
 
-    const {  name, address, email, phoneNumber } = req.body;
-   const {id}= req.params;
-
-    // Check if ID is provided
-    if (!id) {
-        return res.status(400).json({ errors: [{ msg: 'ID is required for updating' }] });
-    }
-
-    // Create an array of objects with img data and contentType for each field
-    let image = {}; // Initialize image as an empty object
-
-    // Check if files are uploaded and if there's at least one file
-    if (req.files && req.files.length > 0) {
-        const file = req.files[0]; // Get the first file from req.files
-    
-        // Assign properties of the file to image
-        image = {
-            data: file.buffer,
-            contentType: file.mimetype
-        };
-    } else {
-        // Handle case where no files are uploaded
-        console.log('No files uploaded with the request');
-    }
-    
-
-    try {
-        // Find the existing missing person by ID
-        const existingLost = await lostModel.findById(id);
-
-        // Check if the missing person exists
-        if (!existingLost) {
-            return res.status(404).json({ errors: [{ msg: 'lost person not found' }] });
-        }
-
-        // Update the fields
-        existingMissing.name = name;
-        existingMissing.address = address;
-        existingMissing.email = email;
-        existingMissing.phoneNumber = phoneNumber;
-        existingMissing.img = image;
-
-        // Save the updated missing person
-        await existingLost.save();
-
-        res.status(200).send('Updated successfully');
-    } catch (error) {
-        console.error('Error updating missing person:', error);
-        res.status(500).send('Internal Server Error');
-    }
-};
+            const {  name, address, email, phoneNumber } = req.body;
+           const {id}= req.params;
+        
+                // Find the existing missing person by ID
+                const lostData = await lostModel.findById(id);
+                // Check if the missing person exists
+        
+                if(!lostData){
+                    next( new ApiError("Missing not found.",404));
+        
+                }
+                const removedImg=lostData.publicId
+                await cloudinary.uploader.destroy(removedImg);
+                cloudinary.uploader.upload(req.file.path,{ folder: 'lostcal' },async(err,result)=>{
+                    if(err) {
+                       console.log(err);
+                       next(  new ApiError("error uploading image",500))
+                    }        
+                const newData=await lostModel.findByIdAndUpdate(id,{
+                    name:name,
+                    email:email,
+                    address:address,
+                    phoneNumber:phoneNumber,
+                    img:result.secure_url,
+                    publicId:result.public_id
+                });
+        
+                res.status(200).json({"newData":newData});
+            } );
+        })
+          
 const lostReq= async (req, res, next) => {
     const user = req.user._id
     const findinfo = await lostModel.find({user:user}).maxTime(10000);
@@ -142,5 +116,5 @@ const lostReq= async (req, res, next) => {
 
    
   };
-  module.exports={addLost,deleteLost,updateLost,lostReq}
+  module.exports={addLost,deleteLost,updateLostData,lostReq}
 
