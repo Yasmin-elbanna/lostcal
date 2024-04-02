@@ -16,8 +16,9 @@ const deleteMylostValidator = [
   const updateMylostValidator = [
     check('id').isMongoId().withMessage('Invalid lost id format'),
 
-    check('name').notEmpty().withMessage("Please entre your name")
-    ,
+    check('name').notEmpty().withMessage("Please entre your name"),
+    check('age').notEmpty().withMessage("Please entre your age"),
+
     check('email').notEmpty().withMessage("Please entre your email").isEmail().withMessage("Invalid email")
         
     ,check('phoneNumber').notEmpty().withMessage("Please entre your phone number").matches(/^01[0125][0-9]{8}$/).withMessage("Invalid phone number")

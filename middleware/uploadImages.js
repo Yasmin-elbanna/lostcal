@@ -32,7 +32,7 @@ exports.uploadSingleImage = (fieldName) => {
     multerOptions().single(fieldName)(req, res, function (err) {
       if (err) {
        next(
-        new apiError(err.message,400)
+        new apiError(err,400)
        )
       }
       if (!req.file) {
