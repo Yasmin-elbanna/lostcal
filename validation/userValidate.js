@@ -15,11 +15,14 @@ const signupValidate=[check('username').notEmpty().withMessage("please entre you
          console.log(e);
         }
        })
-    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password")];
+    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password")
+,validatorMiddleware
+];
 
 
 const loginValidate=[check('email').notEmpty().withMessage('please entre email').isEmail().withMessage('Invalid email'),
-check('password').notEmpty()];
+check('password').notEmpty().withMessage('please entre password')
+,validatorMiddleware];
 const changeNameValidator = [
     check('id').isMongoId().withMessage('Invalid lost id format'),
     check('username').notEmpty().withMessage("please entre your username").isLength({min:4}).withMessage("Invalid username")

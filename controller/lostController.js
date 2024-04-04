@@ -16,7 +16,7 @@ const addLost=catchAsync(async (req, res,next) => {
                 message:"error uploading image"
            })
         }  
-      
+     
             const savedData = await lostModel.create({
                 img: result.secure_url,
                 publicId: result.public_id,

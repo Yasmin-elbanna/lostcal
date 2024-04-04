@@ -7,13 +7,9 @@ const asyncHandler = require('express-async-handler');
 const catchAsync = require('../middleware/catchAsync');
 
 
-const signup = async (req, res) => {
+const signup =catchAsync( async (req, res,next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const {username, email, password } = req.body;
-    const errors=validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
-    }
         
         const newuser = new usermodel({
            username,
@@ -32,17 +28,14 @@ const signup = async (req, res) => {
          return res.json({result,token});
         });
       
-  };
+  });
 
-const login=async(req,res,next)=>{
+const login=catchAsync(async(req,res,next)=>{
   res.setHeader('Access-Control-Allow-Origin', '*');
   
   const { email, password } = req.body;
-    const finduser = await usermodel.findOne({email});
-    const errors=validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
-    }
+    const finduser = await usermodel.findOne({email}).select('+password');
+    
     if (!finduser) {
        return next(
       new ApiError("password or email is not correct",400)
@@ -59,7 +52,7 @@ const login=async(req,res,next)=>{
       new ApiError("password or email is not correct",400)
       );
    }
-  }
+  });
 
   const myinfo=catchAsync( async (req, res, next) => {
     const user = req.user._id
@@ -67,7 +60,7 @@ const login=async(req,res,next)=>{
     const findinfo = await usermodel.findOne({_id:user});
     
     if (findinfo) 
-    return res.json({"username":findinfo.username , "email":findinfo.email});
+    return res.json({"username":findinfo.username , "email":findinfo.email,"id":findinfo.id});
    console.log(findinfo)
     return next(
        new ApiError("user not found",404)

@@ -20,7 +20,8 @@ const schema = mongoose.Schema({
         type: String,
         required: true,
         minLength:6,
-        match:[/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/,'Please fill a valid password']  //special/number/capital 
+        match:[/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/,'Please fill a valid password'],  //special/number/capital
+        select:false, 
     },
   
     passwordChangedAt: Date,
