@@ -8,7 +8,15 @@ const env=require("dotenv")
 const cors = require('cors');
 const bodyParser=require('body-parser')
 const morgan=require('morgan')
+const rateLimit=require('express-rate-limit')
+const helmet=require('helmet')
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+
 const publicerror=require('./controller/errors')
+env.config({path:'config.env'})
+
 const app=express();
 
 
@@ -24,18 +32,35 @@ process.on('uncaughtException', err => {
     process.exit(1);
   });
   
-env.config({path:'config.env'})
+
+// Set security HTTP headers
+app.use(helmet());
+
 if(process.env.NODE_ENV === 'development'){
     app.use(morgan('dev'))
 
 }
+// Limit requests from same API
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour!'
+});
+app.use('/api', limiter);
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
+
+// Prevent parameter pollution
+app.use(hpp());
 app.use(bodyParser.urlencoded({ extended: true }));
  
-  
-app.use(express.json());
-app.use(["/user"], userRoute);
-app.use(["/mylost"], mylostRoute);
-app.use(["/lost"], lostRoute);
+app.use(express.json({ limit: '20kb' }));
+app.use(["/api/user"], userRoute);
+app.use(["/api/mylost"], mylostRoute);
+app.use(["/api/lost"], lostRoute);
 
 
 //api error handling 

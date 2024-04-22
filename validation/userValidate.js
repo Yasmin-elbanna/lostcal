@@ -14,8 +14,13 @@ const signupValidate=[check('username').notEmpty().withMessage("please entre you
         } catch (e) {
          console.log(e);
         }
-       })
-    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password")
+       }), check('passwordConfirm').notEmpty().withMessage("please confirm your password")
+    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password").custom((password, { req }) => {
+        if (password !== req.body.passwordConfirm) {
+          throw new Error('Password Confirmation incorrect');
+        }
+        return true;
+      })
 ,validatorMiddleware
 ];
 
@@ -24,9 +29,18 @@ const loginValidate=[check('email').notEmpty().withMessage('please entre email')
 check('password').notEmpty().withMessage('please entre password')
 ,validatorMiddleware];
 const changeNameValidator = [
-    check('id').isMongoId().withMessage('Invalid lost id format'),
     check('username').notEmpty().withMessage("please entre your username").isLength({min:4}).withMessage("Invalid username")
     ,
     validatorMiddleware,
   ];
-  module.exports={signupValidate,loginValidate,changeNameValidator}
+  const resetPassValidator = [
+    check('passwordConfirm').notEmpty().withMessage("please confirm your password")
+    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password").custom((password, { req }) => {
+        if (password !== req.body.passwordConfirm) {
+          throw new Error('Password Confirmation incorrect');
+        }
+        return true;
+      }),
+    validatorMiddleware,
+  ];
+  module.exports={signupValidate,loginValidate,changeNameValidator,resetPassValidator}

@@ -3,22 +3,21 @@ const utli = require('util')
 const asyncverify = utli.promisify(jwt.verify)
 const ApiError = require('./apierror')
 const User=require('../models/userModel')
+const catchAsync=require('../middleware/catchAsync')
 
-
-const authorized= async (req, res, next) => {
+const authorized=catchAsync( async (req, res, next) => {
   let token;
   if (req.headers.authorization ) {
     token = req.headers.authorization;
   }
-  if (!token) {
+   if (!token) {
     return next(
       new ApiError(
-        'You are not login, Please login to get access this route',
+        'You are not login, Please login to get access',
         401
       )
     );
   }
-
   // 2) Verify token not expire token
   
   const decoded = jwt.verify(token, process.env.secretkey);
@@ -56,7 +55,7 @@ const authorized= async (req, res, next) => {
 
   req.user = currentUser;
   next();
-};
+});
 
 
 module.exports = {authorized}

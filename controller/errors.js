@@ -1,4 +1,9 @@
 const ApiError = require('../middleware/apierror');
+const handleJWTError = () =>
+  new ApiError('Invalid token. Please log in again!', 401);
+
+const handleJWTExpiredError = () =>
+  new ApiError('Your token has expired! Please log in again.', 401);
 
 const sendErrorDev = (err,req ,res) =>
   res.status(err.statusCode).json({
@@ -39,7 +44,9 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
-  
+    if (err.name === 'JsonWebTokenError') err = handleJWTError();
+    if (err.name === 'TokenExpiredError') err = handleJWTExpiredError();
+
     sendErrorProd(err, req, res);
   }
   next()
