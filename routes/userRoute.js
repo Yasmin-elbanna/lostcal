@@ -1,4 +1,4 @@
-const {signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword}=require('../controller/userController')
+const {signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword,logout}=require('../controller/userController')
 const express = require("express");
 const router = express.Router();
 const {signupValidate,loginValidate,changeNameValidator,resetPassValidator}=require('../validation/userValidate')
@@ -13,6 +13,7 @@ router.patch('/changename',authorized,changeNameValidator,changeName)
 router.patch('/forgetPassword',forgotPassword)
 router.patch('/resetPassword/:token',resetPassValidator,resetPassword)
 router.patch('/updateMyPassword',authorized,updatePassword)
+router.get('/logout', logout);
 
 
 module.exports = router;

@@ -185,5 +185,11 @@ const updatePassword = catchAsync(async (req, res, next) => {
   // 4) Log user in, send JWT
   createSendToken(user, 200, res);
 });
-
-  module.exports={signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword}
+const logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'success' });
+};
+  module.exports={signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword,logout}
