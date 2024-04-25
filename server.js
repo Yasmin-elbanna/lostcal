@@ -13,7 +13,8 @@ const helmet=require('helmet')
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-
+const cookieParser = require('cookie-parser');
+const compression = require('compression')
 const publicerror=require('./controller/errors')
 env.config({path:'config.env'})
 
@@ -32,6 +33,8 @@ process.on('uncaughtException', err => {
     process.exit(1);
   });
   
+  
+ app.use(cookieParser());
 
 // Set security HTTP headers
 app.use(helmet());
@@ -46,7 +49,7 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour!'
 });
-app.use('/api', limiter);
+//app.use('/api', limiter);
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
@@ -56,6 +59,7 @@ app.use(xss());
 // Prevent parameter pollution
 app.use(hpp());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(compression())
  
 app.use(express.json({ limit: '20kb' }));
 app.use(["/api/user"], userRoute);

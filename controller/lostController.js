@@ -97,9 +97,9 @@ const addLost=catchAsync(async (req, res,next) => {
 const lostReq= async (req, res, next) => {
     const user = req.user._id
     const findinfo = await lostModel.find({user:user}).maxTime(10000);
-    if(! findinfo){
+    if(! findinfo || findinfo.length===0 ){
       return next(
-        new ApiError("user not found",404)
+        new ApiError("lost not found",404)
      );
       }
     const filteredResponse = findinfo.map(item => ({
