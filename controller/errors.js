@@ -1,4 +1,5 @@
 const ApiError = require('../middleware/apierror');
+
 const handleJWTError = () =>
   new ApiError('Invalid token. Please log in again!', 401);
 
@@ -24,7 +25,7 @@ const sendErrorDev = (err,req ,res) =>
     // Operational, trusted error: send message to client
     
     if (err.isOperational) {
-      console.log(err)
+      
       res.status(err.statusCode).json({
         status: err.status,
         message: err.message

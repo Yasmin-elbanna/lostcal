@@ -35,7 +35,7 @@ const changeNameValidator = [
   ];
   const resetPassValidator = [
     check('passwordConfirm').notEmpty().withMessage("please confirm your password")
-    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password").custom((password, { req }) => {
+    ,check('newpassword').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password").custom((password, { req }) => {
         if (password !== req.body.passwordConfirm) {
           throw new Error('Password Confirmation incorrect');
         }
