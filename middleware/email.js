@@ -6,10 +6,10 @@ const env=require("dotenv")
 env.config({path:'config.env'})
 
 module.exports = class Email {
-  constructor(user, url) {
+  constructor(user,code) {
     this.to = user.email;
     this.firstName = user.username;
-    this.url = url;
+    this.code =code ;
     this.from = `yasminelbanna <${process.env.EMAIL_FROM}>`;
   }
 
@@ -30,7 +30,7 @@ module.exports = class Email {
     // 1) Render HTML based on a pug template
     const html = pug.renderFile(`${__dirname}/../views/${template}.pug`, {
       firstName: this.firstName,
-      url: this.url,
+      code: this.code,
       subject,
     });
 

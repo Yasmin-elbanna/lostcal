@@ -14,7 +14,7 @@ const signupValidate=[check('username').notEmpty().withMessage("please entre you
         } catch (e) {
          console.log(e);
         }
-       }), check('passwordConfirm').notEmpty().withMessage("please confirm your password")
+       })
     ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password").custom((password, { req }) => {
         if (password !== req.body.passwordConfirm) {
           throw new Error('Password Confirmation incorrect');
@@ -43,4 +43,10 @@ const changeNameValidator = [
       }),
     validatorMiddleware,
   ];
-  module.exports={signupValidate,loginValidate,changeNameValidator,resetPassValidator}
+  const forgetPasswordValidator = [
+    check('email').notEmpty().withMessage("please enter your email ")
+    ,
+    validatorMiddleware,
+  ];
+  
+  module.exports={signupValidate,loginValidate,changeNameValidator,resetPassValidator,forgetPasswordValidator}

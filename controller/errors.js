@@ -5,6 +5,13 @@ const handleJWTError = () =>
 const handleJWTExpiredError = () =>
   new ApiError('Your token has expired! Please log in again.', 401);
 
+  const handleValidationErrorDB = err => {
+    const errors = Object.values(err.errors).map(el => el.message);
+  
+    const message = `Invalid input data. ${errors.join('. ')}`;
+    return new ApiError(message, 400);
+  };
+
 const sendErrorDev = (err,req ,res) =>
   res.status(err.statusCode).json({
     status: err.status,
@@ -17,6 +24,7 @@ const sendErrorDev = (err,req ,res) =>
     // Operational, trusted error: send message to client
     
     if (err.isOperational) {
+      console.log(err)
       res.status(err.statusCode).json({
         status: err.status,
         message: err.message
@@ -46,7 +54,8 @@ module.exports = (err, req, res, next) => {
   } else if (process.env.NODE_ENV === 'production') {
     if (err.name === 'JsonWebTokenError') err = handleJWTError();
     if (err.name === 'TokenExpiredError') err = handleJWTExpiredError();
-
+    if (err.name === 'ValidationError')
+    err = handleValidationErrorDB(err);
     sendErrorProd(err, req, res);
   }
   next()

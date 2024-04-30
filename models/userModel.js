@@ -19,18 +19,17 @@ const schema = mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
         minLength:6,
         match:[/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/,'Please fill a valid password'],  //special/number/capital
         select:false, 
     },
     passwordConfirm: {
         type: String,
-        required: true,
     },    
     passwordChangedAt: Date,
-    passwordResetToken: String,
+    passwordResetCode: String,
     passwordResetExpires: Date,
+    passwordResetVerified: Boolean,
     isAdmin:{
         type:Boolean,
         default:false,
@@ -70,20 +69,7 @@ schema.methods.generateToken = function () {
     }, process.env.secretkey)
     return token
   }
-  schema.methods.createPasswordResetToken = function() {
-    const resetToken = crypto.randomBytes(32).toString('hex');
-  
-    this.passwordResetToken = crypto
-      .createHash('sha256')
-      .update(resetToken)
-      .digest('hex');
-  
-    // console.log({ resetToken }, this.passwordResetToken);
-  
-    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-  
-    return resetToken;
-  };
+ 
   
   userShema=mongoose.model('users',schema);
   module.exports=userShema;

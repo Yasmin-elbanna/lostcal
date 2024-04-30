@@ -109,63 +109,91 @@ const login=catchAsync(async(req,res,next)=>{
     return next(new ApiError('There is no user with email address.', 404));
   }
 
-  // 2) Generate the random reset token
-  const resetToken = user.createPasswordResetToken();
-  await user.save({ validateBeforeSave: false });
+  // 2) If user exist, Generate hash reset random 6 digits and save it in db
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedResetCode = crypto
+    .createHash('sha256')
+    .update(resetCode)
+    .digest('hex');
+
+  // Save hashed password reset code into db
+  user.passwordResetCode = hashedResetCode;
+  // Add expiration time for password reset code (10 min)
+  user.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  user.passwordResetVerified = false;
+
+  await user.save();
 
   // 3) Send it to user's email
  
 
   try {
-    const resetURL = `${req.protocol}://${req.get(
-      'host'
-    )}/api/user/resetPassword/${resetToken}`;
-  console.log(resetURL);
-    await new Email(user, resetURL).sendPasswordReset();
+    
+    await new Email(user, resetCode).sendPasswordReset();
 
 
     res.status(200).json({
       status: 'success',
-      message: 'Token sent to email!'
+      message: 'Reset code sent to email'
     });
   } catch (err) {
-    user.passwordResetToken = undefined;
+    user.passwordResetCode = undefined;
     user.passwordResetExpires = undefined;
-    await user.save({ validateBeforeSave: false });
-console.log(err)
-    return next(
-      new ApiError('There was an error sending the email. Try again later!'),
-      500
-    );
+    user.passwordResetVerified = undefined;
+
+    await user.save();
+    return next(new ApiError('There is an error in sending email', 500));
   }
+
+  
 });
-
-const resetPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on the token
-  const hashedToken = crypto
+const verifyPassResetCode = catchAsync(async (req, res, next) => {
+  // 1) Get user based on reset code
+  const hashedResetCode = crypto
     .createHash('sha256')
-    .update(req.params.token)
+    .update(req.body.resetCode)
     .digest('hex');
-console.log(hashedToken);
-  const user = await usermodel.findOne({
-    passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() }
-  });
 
-  // 2) If token has not expired, and there is user, set the new password
+  const user = await usermodel.findOne({
+    passwordResetCode: hashedResetCode,
+    passwordResetExpires: { $gt: Date.now() },
+  });
   if (!user) {
-    return next(new ApiError('Token is invalid or has expired', 400));
+    return next(new ApiError('Reset code invalid or expired'));
   }
-  user.password = req.body.password;
-  user.passwordConfirm = req.body.passwordConfirm;
-  user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+
+  // 2) Reset code valid
+  user.passwordResetVerified = true;
   await user.save();
 
-  // 3) Update changedPasswordAt property for the user
-  // 4) Log the user in, send JWT
-  const token =await user.generateToken();
+  res.status(200).json({
+    status: 'Success',
+  });
+});
+const resetPassword = catchAsync(async (req, res, next) => {
+ 
+  const user = await usermodel.findOne({ email: req.body.email });
+  if (!user) {
+    return next(
+      new ApiError(`There is no user with email ${req.body.email}`, 404)
+    );
+  }
+
+  if (!user.passwordResetVerified) {
+    return next(new ApiError('Reset code not verified', 400));
+  }
+
+  user.password = req.body.newPassword;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetCode = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordResetVerified = undefined;
+
+  await user.save();
+
+ 
   createSendToken(user, 200, res);
+
 });
 
 const updatePassword = catchAsync(async (req, res, next) => {
@@ -192,4 +220,4 @@ const logout = (req, res) => {
   });
   res.status(200).json({ status: 'success' });
 };
-  module.exports={signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword,logout}
+  module.exports={signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword,logout,verifyPassResetCode}

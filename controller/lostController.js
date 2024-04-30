@@ -4,6 +4,7 @@ const ApiError=require('../middleware/apierror')
 const lostModel=require('../models/lostModel')
 const cloudinary=require('../middleware/cloudinary');
 const catchAsync=require('../middleware/catchAsync')
+const NodeWebcam = require('node-webcam');
 
 const addLost=catchAsync(async (req, res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -116,5 +117,7 @@ const lostReq= async (req, res, next) => {
 
    
   };
+  
+  
   module.exports={addLost,deleteLost,updateLostData,lostReq}
 
