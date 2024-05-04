@@ -48,5 +48,15 @@ const changeNameValidator = [
     ,
     validatorMiddleware,
   ];
-  
-  module.exports={signupValidate,loginValidate,changeNameValidator,resetPassValidator,forgetPasswordValidator}
+  const updateMyPasswordValidator = [
+   
+        check('passwordConfirm').notEmpty().withMessage("please confirm your password")
+    ,check('password').notEmpty().matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,15}$/).withMessage("Invalid password").custom((password, { req }) => {
+        if (password !== req.body.passwordConfirm) {
+          throw new Error('Password Confirmation incorrect');
+        }
+        return true;
+      }),
+    validatorMiddleware,
+  ];
+  module.exports={signupValidate,loginValidate,changeNameValidator,resetPassValidator,forgetPasswordValidator,updateMyPasswordValidator}

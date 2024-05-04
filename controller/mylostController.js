@@ -1,8 +1,8 @@
-const asyncHandler = require('express-async-handler');
 const ApiError=require('../middleware/apierror')
 const mylostModel=require('../models/mylostModel')
 const cloudinary=require('../middleware/cloudinary');
 const catchAsync = require('../middleware/catchAsync');
+const APIFeatures = require('../middleware/apiFeatures');
 
 const addMylost= async(req, res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -58,9 +58,14 @@ const mylostReq=catchAsync( async (req, res, next) => {
   });
     
     const search = catchAsync(async (req, res, next) => {
-     
+        const features = new APIFeatures(mylostModel.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
+
           // Search for documents where the 'name' field matches the value in req.body.name
-          const findreq = await mylostModel.find({ name: req.query.name });
+          const findreq =await features.query;
   
           // Check if any documents were found
           if (findreq && findreq.length > 0) {
