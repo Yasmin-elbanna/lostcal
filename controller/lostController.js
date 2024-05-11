@@ -6,6 +6,9 @@ const cloudinary=require('../middleware/cloudinary');
 const catchAsync=require('../middleware/catchAsync')
 const NodeWebcam = require('node-webcam');
 
+
+
+
 const addLost=catchAsync(async (req, res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
    

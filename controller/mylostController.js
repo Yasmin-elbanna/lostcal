@@ -3,6 +3,8 @@ const mylostModel=require('../models/mylostModel')
 const cloudinary=require('../middleware/cloudinary');
 const catchAsync = require('../middleware/catchAsync');
 const APIFeatures = require('../middleware/apiFeatures');
+const request = require('request');
+const lostModel=require('../models/lostModel')
 
 const addMylost= async(req, res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -62,9 +64,9 @@ const mylostReq=catchAsync( async (req, res, next) => {
         .filter()
         .sort()
         .limitFields()
-        .paginate();
-
-          // Search for documents where the 'name' field matches the value in req.body.name
+        .paginate()
+        .search();
+        
           const findreq =await features.query;
   
           // Check if any documents were found
@@ -164,10 +166,37 @@ const mylostReq=catchAsync( async (req, res, next) => {
           res.status(200).send("Request deleted successfully.");
         
       });
+      const matches = catchAsync(async (req, res, next) => {
+        const axios = require('axios');
+       
+            // Make a GET request to the Flask API
+            const response = await axios.get('https://lostcal-ai.onrender.com/matches');
+            
+            // Initialize arrays to collect matching documents
+            const mylostMatches = [];
+            const lostMatches = [];
+            
+            // Process the response data
+            for (const ids of response.data) {
+                const lost = await lostModel.findById(ids[0]);
+                const mylost = await mylostModel.findById(ids[1]);
+    
+                if (String(req.user._id) === String(lost.user)) {
+                    mylostMatches.push(mylost);
+                } if (String(req.user._id) === String(mylost.user)) {
+                    lostMatches.push(lost);
+                }
+            }
+            
+            // Combine all matching documents
+            const allMatches = mylostMatches.concat(lostMatches);
+                         
+            // Send the combined matches as JSON response
+            res.json({"allMatches":allMatches}).status(200);
+        
+    });
+    
 
 
-
-
-
-  module.exports={addMylost,mylostReq,deleteMylost,search,updateMylostData}
+  module.exports={addMylost,mylostReq,deleteMylost,search,updateMylostData,matches}
 

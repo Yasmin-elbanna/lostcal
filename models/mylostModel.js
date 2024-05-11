@@ -1,8 +1,9 @@
 const  mongoose  = require("mongoose");
 
-const schema = mongoose.Schema({
+const mylostSchema = mongoose.Schema({
   name:{
     type:String,
+    trim:true,
   },
 
   img:{
@@ -35,5 +36,7 @@ user: {
 
 },{ timestamps: true });
 
-  missingPepole=mongoose.model('missingPepole',schema);
+  mylostSchema.index({ name: 1 });
+  
+  missingPepole=mongoose.model('missingPepole',mylostSchema);
   module.exports=missingPepole;

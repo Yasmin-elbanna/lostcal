@@ -34,9 +34,9 @@ const schema = mongoose.Schema({
         type:Boolean,
         default:false,
     },
-  
 
 },{ timestamps: true });
+
 schema.pre("save",async function(next){
     if (this.isModified('password')) {
         const saltpass=15;

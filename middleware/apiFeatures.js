@@ -49,5 +49,23 @@ class APIFeatures {
 
     return this;
   }
+  search() {
+    if (this.queryString.name) {
+      let query = {};
+
+      // Check if the keyword length is greater than 1
+      if (this.queryString.name.length > 1) {
+          // Construct the regular expression to match names starting with the keyword
+          query.name = { $regex: `^${this.queryString.name}`, $options: 'i' };
+      } else {
+          // Construct the regular expression to match any part of the name
+          query.name = { $regex: this.queryString.name, $options: 'i' };
+      }
+
+      this.query = this.query.find(query);
+  }
+  return this;
+  }
+
 }
 module.exports = APIFeatures;
