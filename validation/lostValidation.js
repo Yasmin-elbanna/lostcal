@@ -1,4 +1,4 @@
-const {check,body}=require("express-validator")
+const {check}=require("express-validator")
 const validatorMiddleware = require('../middleware/validator');
 
 const createlostValidator=[
@@ -15,7 +15,7 @@ const deletelostValidator = [
     validatorMiddleware,
   ];
 
-  const updatelostValidator = [
+const updatelostValidator = [
     check('id').isMongoId().withMessage('Invalid lost id format'),
     check('name').notEmpty().withMessage("please entre your name")
     ,
@@ -25,5 +25,6 @@ const deletelostValidator = [
     ,check('address').notEmpty().withMessage("please entre Missing address"),validatorMiddleware
 
   ];
+
 module.exports={createlostValidator,deletelostValidator,updatelostValidator}
     

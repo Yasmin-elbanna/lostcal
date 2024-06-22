@@ -7,6 +7,7 @@ const asyncHandler = require('express-async-handler');
 const catchAsync = require('../middleware/catchAsync');
 const Email = require('../middleware/email');
 const crypto= require('crypto');
+const BlacklistModel=require( '../models/blacklistModel.js');
 
 const env=require("dotenv")
 env.config({path:'config.env'})
@@ -213,11 +214,36 @@ const updatePassword = catchAsync(async (req, res, next) => {
   // 4) Log user in, send JWT
   createSendToken(user, 200, res);
 });
-const logout = (req, res) => {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
-  res.status(200).json({ status: 'success' });
+
+const logout = async(req, res) => {
+  try {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
+    }
+    
+   
+    if (!token) return res.sendStatus(204); // No content
+    
+    const checkIfBlacklisted = await BlacklistModel.findOne({ token: token }); // Check if that token is blacklisted
+    // if true, send a no content response.
+    if (checkIfBlacklisted) return res.sendStatus(204);
+    // otherwise blacklist token
+    const newBlacklist = new BlacklistModel({
+      token: token,
+    });
+    await newBlacklist.save();
+    // Also clear request cookie on client
+    res.setHeader('Clear-Site-Data', '"cookies"');
+    res.status(200).json({ message: 'You are logged out!' });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal Server Error',
+    });
+  }
+  res.end();
 };
   module.exports={signup,login,myinfo,changeName,forgotPassword,resetPassword,updatePassword,logout,verifyPassResetCode}

@@ -12,7 +12,8 @@ const deleteMylostValidator = [
     check('id').isMongoId().withMessage('Invalid lost id format'),
     validatorMiddleware,
   ];
-  const updateMylostValidator = [
+
+const updateMylostValidator = [
     check('id').isMongoId().withMessage('Invalid lost id format'),
 
     check('name').notEmpty().withMessage("Please entre your name"),
